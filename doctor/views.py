@@ -2,9 +2,10 @@ from authlib.integrations.django_client import OAuth
 from django.contrib.auth.decorators import login_required
 from django.contrib.sites.shortcuts import get_current_site
 import openai
-
+from pymongo import MongoClient
 from django.urls import reverse
 import base64
+
 from urllib.parse import quote_plus, urlencode
 import google.generativeai as genai
 from django.views.decorators.http import require_http_methods
@@ -16,7 +17,7 @@ import uuid
 import json
 import os
 from datetime import datetime
-from keras.models import load_model  # type: ignore # TensorFlow is required for Keras to work
+from keras.models import load_model  # TensorFlow is required for Keras to work
 from PIL import Image, ImageOps  # Install pillow instead of PIL
 import numpy as np
 from .form import ImageForm
@@ -56,12 +57,26 @@ class UploadAudio(APIView):
         return JsonResponse({'message': 'Audio received successfully'}, status=200)
 
 def index(request):
-    return render(request, "home.html")
+
+    return render(
+        request,
+        "home.html",
+        context={
+            "session": request.session.get("user"),
+            "pretty": json.dumps(request.session.get("user"), indent=4),
+        }
+    )
 
 
 def doctor(request):
     ob = Doctor.objects.all()
-    params={"sessions":ob}
+    # add_meeting({"meeting_link":"hello mr"})
+
+    dt = get_meeting_links()
+    params={"sessions":dt['meeting_links']}
+    # params={"sessions":ob}
+    # print(dt['meeting_links'])
+    # print("hsgsgsgsgsgsgsgsgsgsgs")
     return render(request, "doctor.html", params)
 
 
@@ -244,6 +259,7 @@ def create_meeting(request):
 
     data = Doctor(host_link=host_link)
     data.save()
+    add_meeting({"meeting_link": host_link})
 
     data2 = Sessiondata(username=user, join_link=guest_url)
     data2.save()
@@ -297,6 +313,7 @@ def breast_cancer(request):
     # Load the model
     model = load_model("doctor/keras_Model-4.h5", compile=False)
 
+
     # Load the labels
     class_names = open("doctor/labels-breast.txt", "r").readlines()
 
@@ -333,6 +350,7 @@ def breast_cancer(request):
 
     messages.success(request, f"{class_name[2:]}:- Accuracy:-{confidence_score * 100}")
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
 
 def brain(request):
     directory = "media/images"
@@ -415,6 +433,7 @@ Please write in English language.""",
 
     answer = response.choices[0].text.strip()
     print("Answer:", answer)
+    print("answerrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
 
 @csrf_exempt
 def upload_voice(request):
@@ -440,7 +459,7 @@ def upload_voice(request):
 def gen(text):
 
 
-    api_key = "AIzaSyCvnlC48H7lsL96a1IjrrNQ376bk1-DuSE"
+    api_key = "AIzaSyDwg9AD9lFMOhB2XnUW2SI1wwi3oYn3IkQ"
 
     genai.configure(api_key=api_key)
 
@@ -470,7 +489,7 @@ def translate_to_english(hindi_transcript):
 
 
 def analysis(text):
-    api_key = "AIzaSyCvnlC48H7lsL96a1IjrrNQ376bk1-DuSE"
+    api_key = "AIzaSyDwg9AD9lFMOhB2XnUW2SI1wwi3oYn3IkQ"
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel('gemini-pro')
 
@@ -486,6 +505,8 @@ def analysis(text):
          Always consult a healthcare professional before taking any medication. Please write in English language.
 
     """)
+    # print(response.parts)
+    # print("pepepepepepepepepepeepepe")
 
     ans = extract_medication_info(response.text)
     return ans
@@ -553,7 +574,7 @@ def callback(request):
 
 
 def login(request):
-    messages.success(request, "Welcome to Shayak")
+    messages.success(request, "Welcome to BeyondClinic")
     return oauth.auth0.authorize_redirect(
         request, request.build_absolute_uri(reverse("callback"))
     )
@@ -582,3 +603,84 @@ def signin(request):
             "pretty": json.dumps(request.session.get("user"), indent=4),
         },
     )
+
+
+def get_meeting_links():
+    # MongoDB Atlas connection details from settings
+    user = settings.MONGODB_USER
+    password = settings.MONGODB_PASSWORD
+    cluster_url = settings.MONGODB_CLUSTER_URL
+    dbname = 'sample_mflix'
+    collection_name = 'meetings'
+
+    # Escape username and password
+    user = quote_plus(user)
+    password = quote_plus(password)
+
+    # Construct the MongoDB URI
+    uri = f"mongodb+srv://{user}:{password}@{cluster_url}/{dbname}?retryWrites=true&w=majority"
+
+    try:
+        # Connect to MongoDB Atlas
+        client = MongoClient(uri)
+
+        # Access the specified database
+        db = client[dbname]
+
+        # Access the specified collection
+        collection = db[collection_name]
+
+        # Retrieve all documents in the collection
+        documents = collection.find()
+
+        # Extract meeting links from documents
+        meeting_links = [doc.get('meeting_link') for doc in documents if 'meeting_link' in doc]
+
+        # Close the connection
+        client.close()
+
+        # Return as JSON response
+        return ({'meeting_links': meeting_links})
+
+    except Exception as e:
+        return ({'error': str(e)})
+
+
+def add_meeting(meeting_data):
+    # MongoDB Atlas connection details from settings
+    user = settings.MONGODB_USER
+    password = settings.MONGODB_PASSWORD
+    cluster_url = settings.MONGODB_CLUSTER_URL
+    dbname = 'sample_mflix'
+    collection_name = 'meetings'
+
+
+    # Escape username and password
+    user = quote_plus(user)
+    password = quote_plus(password)
+
+    # Construct the MongoDB URI
+    uri = f"mongodb+srv://{user}:{password}@{cluster_url}/{dbname}?retryWrites=true&w=majority"
+
+    try:
+        # Connect to MongoDB Atlas
+        client = MongoClient(uri)
+
+        # Access the specified database
+        db = client[dbname]
+
+        # Access the specified collection
+        collection = db[collection_name]
+
+        # Insert the data into the collection
+        result = collection.insert_one(meeting_data)
+
+        # Close the connection
+        client.close()
+
+        # Return the ID of the inserted document
+        return str(result.inserted_id)
+
+    except Exception as e:
+        # Handle any errors
+        return str(e)

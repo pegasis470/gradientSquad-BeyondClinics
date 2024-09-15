@@ -7,7 +7,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
     />
-    <title>Home - Sahayak</title>
+    <title>Home - BeyondClinic</title>
     <link rel="stylesheet" href="../static/assets/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" href="../static/assets/" />
     <link
@@ -52,7 +52,7 @@
       >
         <div class="container">
           <a class="navbar-brand d-flex align-items-center" href="/"
-            ><span><strong>Sahayak</strong></span></a
+            ><span><img src="../media/bc.png" alt="" style="width: 200px; height: auto; max-height: 40px;"></span></a
           ><button
             data-toggle="collapse"
             class="navbar-toggler"
@@ -69,12 +69,26 @@
               <li class="nav-item">
                 <a class="nav-link" href="#how-it-works">How it works?</a>
               </li>
+
               <li class="nav-item">
                 <a class="nav-link" href="/doctor/">For Doctors</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="#contact">Contacts</a>
               </li>
+                {% if not session %}
+                <li class="nav-item">
+
+                    <a href="https://blank-app-whmbwf2gxj.streamlit.app/" target="_blank"><button type="button" class="btn btn-success">Login</button></a>
+                </li>
+
+                    {% else %}
+
+                    <li class="nav-item">
+
+                    <a href="{% url 'logout' %}" target="_blank"><button type="button" class="btn btn-success">Logout</button></a>
+                </li>
+                {% endif %}
             </ul>
             <div class="row">
               <!-- <a class="btn bg-transparent" role="button" href="signup.html">Login</a> -->
@@ -117,7 +131,7 @@
                   font-weight: 700;
                 "
               >
-                Sahayak
+                  <img src="../media/beyondclinics_logo-removebg-preview.png" alt="" style="height: 50%; width: 50%">
               </h1>
               <h1
                 class="mt-4 mb-5"
@@ -441,8 +455,9 @@
             <div class="text-center mt-3">
               <p>Start speaking about your health issues, we're listening...</p>
               <div id="transcript">Speak something...</div>
-<button id="startBtn">Start Listening</button>
-<a href="/#"><button id="stopBtn">Stop Listening</button></a>
+
+<button id="startBtn"><img src="../media/pepicons-pencil--microphone-circle.svg" alt="" style="height: 35px; width: 55px"></button>
+<a href="/#"><button id="stopBtn"><img src="../media/pepicons-pencil--microphone-circle-off.svg" alt="" style="height: 34px; width: 54px"></button></a>
 
             </div>
           </div>

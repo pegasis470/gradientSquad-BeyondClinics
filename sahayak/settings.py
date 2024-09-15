@@ -189,3 +189,8 @@ AUTH0_CLIENT_ID = "aXn1lek5XNpNSAEbAeIQ2tfYfXimmCgW"
 AUTH0_CLIENT_SECRET = "YfFHAz3I1vkgGhCfN4rYJHEGAlebX1YBEfqhJQQKrED6ns_PuknHjKXlXwCn86oz"
 
 
+
+# MongoDB Atlas credentials
+MONGODB_USER = 'hackthemountain'
+MONGODB_PASSWORD = '1@Qwertyuiop'
+MONGODB_CLUSTER_URL = 'cluster0.0vqiy.mongodb.net'

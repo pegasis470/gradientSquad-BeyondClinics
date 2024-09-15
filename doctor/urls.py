@@ -16,6 +16,7 @@ urlpatterns = [
     path("logout", views.logout, name="logout"),
     path("callback", views.callback, name="callback"),
     path("signin", views.signin, name="signin"),
+    # path('meeting-links', views.get_meeting_links, name='get_meeting_links'),
 
 
     path('doctor/', views.doctor, name='doctor'),
