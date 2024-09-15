@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Classification Form</title>
+</head>
+<body>
+    <h1>Upload Image for Classification</h1>
+
+    <form id="image-form" action="https://digitalclock.pythonanywhere.com/classify-image" method="POST" enctype="multipart/form-data">
+        <label for="label">Enter a label or description:</label>
+        <input type="text" id="label" name="label" required>
+        <br><br>
+
+        <label for="image">Select image:</label>
+        <input type="file" id="image" name="image" accept="image/*" required>
+        <br><br>
+
+        <button type="submit">Upload and Classify</button>
+    </form>
+
+    <p id="result"></p>
+
+    <script>
+        // Handle form submission with fetch
+        const form = document.getElementById('image-form');
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(form);
+            const resultText = document.getElementById('result');
+
+            try {
+                const response = await fetch(form.action, {
+                    method: form.method,
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    resultText.textContent = `Label: ${result.label}, Input: ${result.score}`;
+                } else {
+                    resultText.textContent = `Error: ${result.error}`;
+                }
+            } catch (error) {
+                resultText.textContent = `Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
